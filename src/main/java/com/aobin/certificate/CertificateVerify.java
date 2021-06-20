@@ -1,4 +1,4 @@
-package com.aobin;
+package com.aobin.certificate;
 
 import java.security.cert.X509Certificate;
 import java.util.List;
