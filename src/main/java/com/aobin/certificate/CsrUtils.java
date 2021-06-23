@@ -41,10 +41,10 @@ public class CsrUtils {
      *
      * @param isRsaNotEcc {@code true}：使用 RSA 加密算法；{@code false}：使用 ECC（SM2）加密算法
      * @return RSA P10 证书请求 Base64 字符串
-     * @throws NoSuchAlgorithmException  当指定的密钥对算法不支持时
+     * @throws NoSuchAlgorithmException           当指定的密钥对算法不支持时
      * @throws InvalidAlgorithmParameterException 当采用的 ECC 算法不适用于该密钥对生成器时
-     * @throws OperatorCreationException 当创建签名者对象失败时
-     * @throws IOException               当打印 OpenSSL PEM 格式文件字符串失败时
+     * @throws OperatorCreationException          当创建签名者对象失败时
+     * @throws IOException                        当打印 OpenSSL PEM 格式文件字符串失败时
      */
     public static String generateCsr(boolean isRsaNotEcc) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, OperatorCreationException, IOException {
         // 使用 RSA/ECC 算法，生成密钥对（公钥、私钥）
@@ -88,7 +88,7 @@ public class CsrUtils {
     /**
      * 打印 OpenSSL PEM 格式文件字符串的 SSL证书密钥 KEY 文件内容
      *
-     * @param privateKey 私钥
+     * @param privateKey  私钥
      * @param isRsaNotEcc {@code true}：使用 RSA 加密算法；{@code false}：使用 ECC（SM2）加密算法
      */
     private static void printOpensslPemFormatKeyFileContent(PrivateKey privateKey, boolean isRsaNotEcc) throws IOException {
@@ -119,30 +119,51 @@ public class CsrUtils {
     }
 
 
-    public static PKCS10CertificationRequest getCsr(String pem) {
+    public static PKCS10CertificationRequest getCsr(String csrStr) {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         PKCS10CertificationRequest csr = null;
-        ByteArrayInputStream pemStream = null;
+        ByteArrayInputStream csrStream = null;
+        Reader csrReader = null;
+        PEMParser pemParser = null;
         try {
-            pemStream = new ByteArrayInputStream(pem.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            log.error("UnsupportedEncodingException, convertPemToPublicKey", ex);
-        }
+            csrStream = new ByteArrayInputStream(csrStr.getBytes("UTF-8"));
+            csrReader = new BufferedReader(new InputStreamReader(csrStream));
+            pemParser = new PEMParser(csrReader);
 
-        Reader pemReader = new BufferedReader(new InputStreamReader(pemStream));
-        PEMParser pemParser = new PEMParser(pemReader);
-
-        try {
             Object parsedObj = pemParser.readObject();
-
-            System.out.println("PemParser returned: " + parsedObj);
 
             if (parsedObj instanceof PKCS10CertificationRequest) {
                 csr = (PKCS10CertificationRequest) parsedObj;
-
             }
-        } catch (IOException ex) {
-            log.error("IOException, convertPemToPublicKey", ex);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (csrStream != null)
+            {
+                try {
+                    csrStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (csrReader != null)
+            {
+                try {
+                    csrReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (pemParser != null)
+            {
+                try {
+                    pemParser.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
 
         return csr;

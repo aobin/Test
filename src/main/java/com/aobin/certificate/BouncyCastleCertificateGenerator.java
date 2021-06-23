@@ -101,7 +101,7 @@ public class BouncyCastleCertificateGenerator {
         // Use BasicConstraints to say that this Cert is not a CA
         issuedCertBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
 
-        // Add Issuer cert identifier as Extension
+        // Add Issuer cert identifier as Extension //添加根证书
         issuedCertBuilder.addExtension(Extension.authorityKeyIdentifier, false, issuedCertExtUtils.createAuthorityKeyIdentifier(rootCert));
         issuedCertBuilder.addExtension(Extension.subjectKeyIdentifier, false, issuedCertExtUtils.createSubjectKeyIdentifier(csr.getSubjectPublicKeyInfo()));
 
